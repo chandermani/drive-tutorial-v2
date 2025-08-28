@@ -28,6 +28,10 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Header } from "./header";
+import { Sidebar } from "./sidebar";
+import { GridView } from "./grid-view";
+import { ListView } from "./list-view";
+import { getFileIcon } from "./get-file-icon";
 
 interface FileItem {
   id: string;
@@ -91,23 +95,6 @@ const mockData: FileItem[] = [
     url: "#",
   },
 ];
-
-const getFileIcon = (type: string) => {
-  switch (type) {
-    case "folder":
-      return <Folder className="text-primary h-8 w-8" />;
-    case "document":
-      return <FileText className="h-8 w-8 text-blue-400" />;
-    case "image":
-      return <ImageIcon className="h-8 w-8 text-green-400" />;
-    case "video":
-      return <Video className="h-8 w-8 text-red-400" />;
-    case "audio":
-      return <Music className="h-8 w-8 text-purple-400" />;
-    default:
-      return <FileText className="text-muted-foreground h-8 w-8" />;
-  }
-};
 
 export default function DriveClone() {
   const [breadcrumbPath, setBreadcrumbPath] = useState<string[]>(["My Drive"]);
@@ -223,6 +210,11 @@ export default function DriveClone() {
     alert("Upload functionality would be implemented here!");
   };
 
+  // Add a handler for deleting files
+  const handleDeleteFile = (fileId: string) => {
+    setFiles(files.filter((f) => f.id !== fileId));
+  };
+
   return (
     <div className="bg-background min-h-screen">
       <Header
@@ -232,59 +224,9 @@ export default function DriveClone() {
         setViewMode={setViewMode}
         handleUpload={handleUpload}
       />
-
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="bg-sidebar border-sidebar-border w-64 border-r p-4">
-          <nav className="space-y-2">
-            <Button
-              variant="ghost"
-              className="text-sidebar-foreground hover:bg-sidebar-accent w-full justify-start"
-              onClick={handleBackToRoot}
-            >
-              <Home className="mr-3 h-4 w-4" />
-              My Drive
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-sidebar-foreground hover:bg-sidebar-accent w-full justify-start"
-            >
-              <Users className="mr-3 h-4 w-4" />
-              Shared with me
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-sidebar-foreground hover:bg-sidebar-accent w-full justify-start"
-            >
-              <Clock className="mr-3 h-4 w-4" />
-              Recent
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-sidebar-foreground hover:bg-sidebar-accent w-full justify-start"
-            >
-              <Star className="mr-3 h-4 w-4" />
-              Starred
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-sidebar-foreground hover:bg-sidebar-accent w-full justify-start"
-            >
-              <Trash2 className="mr-3 h-4 w-4" />
-              Trash
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-sidebar-foreground hover:bg-sidebar-accent w-full justify-start"
-            >
-              <Settings className="mr-3 h-4 w-4" />
-              Settings
-            </Button>
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-6">
+      <div className="flex min-h-screen w-full">
+        <Sidebar onBackToRoot={handleBackToRoot} />
+        <main className="flex-1 p-6 h-screen">
           <div className="mb-6">
             <div className="mb-2 flex items-center space-x-2">
               {breadcrumbPath.map((path, index) => (
@@ -315,198 +257,18 @@ export default function DriveClone() {
 
           {/* File Grid/List */}
           {viewMode === "grid" ? (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-              {filteredFiles.map((file) => (
-                <Card
-                  key={file.id}
-                  className="hover:bg-accent/50 group bg-card border-border cursor-pointer p-4 transition-colors"
-                  onClick={() =>
-                    file.type === "folder"
-                      ? handleFolderClick(file.name)
-                      : file.url && window.open(file.url, "_blank")
-                  }
-                >
-                  <div className="flex flex-col items-center space-y-2">
-                    <div className="relative">
-                      {getFileIcon(file.type)}
-                      {file.starred && (
-                        <Star className="absolute -top-1 -right-1 h-3 w-3 fill-current text-yellow-400" />
-                      )}
-                    </div>
-                    <div className="text-center">
-                      <p
-                        className="text-card-foreground w-full truncate text-sm font-medium"
-                        title={file.name}
-                      >
-                        {file.name}
-                      </p>
-                      <p className="text-muted-foreground text-xs">
-                        {file.size && `${file.size} • `}
-                        {file.modified}
-                      </p>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="opacity-0 transition-opacity group-hover:opacity-100"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          Preview
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Share2 className="mr-2 h-4 w-4" />
-                          Share
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Download className="mr-2 h-4 w-4" />
-                          Download
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </Card>
-              ))}
-            </div>
+            <GridView
+              files={filteredFiles}
+              getFileIcon={getFileIcon}
+              onFolderClick={handleFolderClick}
+            />
           ) : (
-            <div className="bg-card border-border overflow-hidden rounded-lg border">
-              {/* List header */}
-              <div className="text-muted-foreground border-border bg-muted/30 flex items-center border-b px-6 py-3 text-sm font-medium">
-                <div className="flex-1">Name</div>
-                <div className="w-32 text-center">Modified</div>
-                <div className="w-24 text-center">Size</div>
-                <div className="w-20"></div> {/* Space for actions */}
-              </div>
-
-              {filteredFiles.map((file) => (
-                <div
-                  key={file.id}
-                  className="hover:bg-accent/30 group border-border/50 flex cursor-pointer items-center border-b px-6 py-4 transition-colors last:border-b-0"
-                  onClick={() =>
-                    file.type === "folder"
-                      ? handleFolderClick(file.name)
-                      : file.url && window.open(file.url, "_blank")
-                  }
-                >
-                  {/* Icon and Name column */}
-                  <div className="flex min-w-0 flex-1 items-center space-x-3">
-                    <div className="relative flex-shrink-0">
-                      {getFileIcon(file.type)}
-                      {file.starred && (
-                        <Star className="absolute -top-1 -right-1 h-3 w-3 fill-current text-yellow-400" />
-                      )}
-                    </div>
-                    <p
-                      className="text-foreground truncate font-medium"
-                      title={file.name}
-                    >
-                      {file.name}
-                    </p>
-                  </div>
-
-                  {/* Modified column */}
-                  <div className="w-32 text-center">
-                    <p className="text-muted-foreground text-sm">
-                      {file.modified}
-                    </p>
-                  </div>
-
-                  {/* Size column */}
-                  <div className="w-24 text-center">
-                    <p className="text-muted-foreground text-sm">
-                      {file.type === "folder" ? "—" : file.size ?? "—"}
-                    </p>
-                  </div>
-
-                  {/* Actions column */}
-                  <div className="flex w-20 items-center justify-end space-x-1">
-                    {/* Direct Download and Delete Icons for Files */}
-                    {file.type !== "folder" && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="hover:bg-accent h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (file.url) {
-                              const link = document.createElement("a");
-                              link.href = file.url;
-                              link.download = file.name;
-                              link.click();
-                            }
-                          }}
-                          title="Download"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="hover:bg-destructive/10 hover:text-destructive h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (
-                              confirm(
-                                `Are you sure you want to delete "${file.name}"?`,
-                              )
-                            ) {
-                              setFiles(files.filter((f) => f.id !== file.id));
-                            }
-                          }}
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-
-                    {/* More actions menu */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          Preview
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Share2 className="mr-2 h-4 w-4" />
-                          Share
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Download className="mr-2 h-4 w-4" />
-                          Download
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ListView
+              files={filteredFiles}
+              getFileIcon={getFileIcon}
+              onFolderClick={handleFolderClick}
+              onDeleteFile={handleDeleteFile}
+            />
           )}
 
           {filteredFiles.length === 0 && (
