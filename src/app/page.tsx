@@ -425,7 +425,7 @@ export default function DriveClone() {
                   {/* Size column */}
                   <div className="w-24 text-center">
                     <p className="text-muted-foreground text-sm">
-                      {file.type === "folder" ? "—" : file.size || "—"}
+                      {file.type === "folder" ? "—" : file.size ?? "—"}
                     </p>
                   </div>
 
