@@ -381,12 +381,6 @@ export default function DriveClone() {
             </div>
           ) : (
             <div className="bg-card border-border overflow-hidden rounded-lg border">
-              {console.log(
-                "[v0] Rendering list view with",
-                filteredFiles.length,
-                "files",
-              )}
-
               {/* List header */}
               <div className="text-muted-foreground border-border bg-muted/30 flex items-center border-b px-6 py-3 text-sm font-medium">
                 <div className="flex-1">Name</div>
